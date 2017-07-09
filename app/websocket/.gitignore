@@ -1,0 +1,7 @@
+.idea
+/vendor/*
+!/vendor/manifest
+/bin/*
+!/bin/.gitkeep
+/pkg/*
+!/pkg/.gitkeep

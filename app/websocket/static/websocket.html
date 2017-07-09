@@ -1,0 +1,122 @@
+<html>
+<head>
+    <title>websocket sample</title>
+
+    <style>
+        .disp {
+            font-size:8px;
+            color: black;
+        }
+        .disp.error {
+            color: red;
+        }
+        .disp.request {
+            color: green;
+        }
+        .disp.response {
+            color: blue;
+        }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+
+        $(function() {
+            Main.init();
+        });
+
+        var Main = {
+//            wsUri: "ws://echo.websocket.org/";
+            wsUri: "ws://localhost:8100/ws",
+            $output: null,
+            $message: null,
+            $connButton: null,
+            $sendButton: null,
+            websocket: null,
+
+            init: function() {
+                this.$output = $("#output");
+                this.$message = $("#message");
+                this.$connButton = $("#connButton");
+                this.$sendButton = $("#sendButton");
+                this.onClose();
+            },
+
+            open: function() {
+                var that = this;
+                this.websocket = new WebSocket(this.wsUri);
+                this.websocket.onopen = function(evt) {
+                    that.onOpen(evt)
+                };
+                this.websocket.onclose = function(evt) {
+                    that.onClose(evt)
+                };
+                this.websocket.onmessage = function(evt) {
+                    that.onMessage(evt)
+                };
+                this.websocket.onerror = function(evt) {
+                    that.onError(evt)
+                };
+            },
+
+            close: function() {
+                if (this.websocket) {
+                    this.websocket.close();
+                    this.websocket = null;
+                }
+            },
+
+            connButtonClick: function() {
+                if (this.websocket) {
+                    this.close();
+                } else {
+                    this.open();
+                }
+            },
+
+            onOpen: function(evt) {
+                this.disp("CONNECTED", "disp");
+                this.$connButton.html("Disconnect");
+                this.$sendButton.prop("disabled", false);
+            },
+
+            onClose: function(evt) {
+                if (evt) {
+                    this.disp("DISCONNECTED", "disp");
+                }
+                this.$connButton.html("Connect");
+                this.$sendButton.prop("disabled", true);
+            },
+
+            onMessage: function(evt) {
+                this.disp("RESPONSE: " + evt.data, "disp response");
+            },
+
+            onError: function(evt) {
+                console.log(evt)
+                this.disp("ERROR:", "disp error");
+            },
+
+            doSend: function() {
+                this.websocket.send(this.$message.val());
+                this.disp("REQUEST: " + this.$message.val(), "disp request");
+                return false;
+            },
+
+            disp: function(msg, className) {
+                var $div = $("<div></div>").addClass(className).text(msg);
+                $div.appendTo("#output");
+            }
+        }
+    </script>
+</head>
+<body>
+<h2>WebSocket Echo</h2>
+<form onSubmit="Main.doSend(); return false;">
+    <button id="connButton" type="button" onclick="Main.connButtonClick();"></button>
+    <input id="message" type="text" /><button id="sendButton">Send</button>
+</form>
+<div id="output"></div>
+</body>
+</html>

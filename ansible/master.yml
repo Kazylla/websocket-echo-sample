@@ -1,0 +1,24 @@
+- hosts: web
+  user: vagrant
+  tasks:
+    - name: add application user group
+      become: true
+      become_user: root
+      group:
+        name: app
+        gid: 1000
+    - name: add application user
+      become: true
+      become_user: root
+      user:
+        name: app
+        comment: "application user"
+        uid: 1000
+        group: app
+        groups: wheel
+    - name: install packages from yum
+      yum: name={{ item }} state=latest
+      become: true
+      become_user: root
+      with_items:
+        - golang
